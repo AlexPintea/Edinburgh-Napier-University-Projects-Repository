@@ -1,0 +1,171 @@
+// C A R D   C O M P A R I S O N |
+//--------------------------------
+
+  	  
+	  MOV R3, #63     // Move '?' to register R4
+	  MOV R4, #32     // Move Space to register R4
+	  
+      MOV R5, #62     // Move '>' to register R5
+	  MOV R6, #60     // Move '<' to register R6
+	  MOV R7, #61     // Move '=' to register R7
+	  // Letters for comparison messages
+
+      MOV R9,  #67    // Move 'C' to register R9
+      MOV R10, #49    // Move '1' to register R10
+      MOV R11, #50    // Move '2' to register R11
+      MOV R12, #58    // Move ':' to register R12
+	  // Letters for output messages "C1:" and "C2:"
+
+// Getting card values & checking for input errors
+// P A R T  2 – Verify the Values 
+// Part 2 Report: The values are inputted, then compared to 13 and 1. If they are greater than 13 or less than 1, we output an error and end the execution. The error label is at the end of this file, so that we are sure to terminate. If the data is appropriate, we output it for visibility and go on with the execution.
+
+      OUT R9,7        // Output "C1:"
+      OUT R10,7
+      OUT R12,7
+
+      INP R0,2        // Input the 1st card as an integer into the specified register
+      CMP R0,#13      // Compate the input card to 13, to see if it is <= than 13
+      BGT InputError  // If not the case, call InputError
+      CMP R0,#1       // Compate the input card to 1, to see if it is  >= than 1
+      BLT InputError  // If not the case, call InputError
+      OUT R0,4        // Outout the value of the card
+
+
+	  OUT R4, 7       // Output space
+	  OUT R3, 7       // Output '?'
+	  OUT R4, 7       // Output space
+
+		
+      OUT R9,7        // Output "C2:"
+      OUT R11,7
+      OUT R12,7
+
+      INP R1,2        // Input the 2nd card as an integer into the specified register
+      CMP R1,#13      // Compate the input card to 13, to see if it is <= than 13
+      BGT InputError  // If not the case, call InputError
+      CMP R1,#1       // Compate the input card to 1, to see if it is  >= than 1
+      BLT InputError  // If not the case, call InputError
+	  OUT R1,4        // Outout the value of the card
+
+// Converting Card 2 to Ascii and outputting it
+
+
+      OUT R9,7        // Output "C2:"
+      OUT R11,7
+      OUT R12,7
+
+	  OUT R4, 7       // Output space
+
+
+// P A R T  3 – Output Card Value (character or number)
+// Part 3 Report: Since we have stored both the numerical and "card value" ('A', 'J', 'Q', 'K', '10', '9', etc.) of the cards, it will be easy to load the "card value" array in the R2 register, add to it the value stored in R0 or R1, to output the corresponding "card value" for each. The pseudocode is written in C++ and has 3 if statements, deciding which comparison statement to print.
+
+
+	  MOV R2, #integerToAscii // Load into register R2 the data stored at address integerToAscii (which is the 1st item in the array)
+	  ADD R2, R2, R1 // Add as much as needed to get to the desired card
+	  OUT R2, 8 // Output a null terminated string, so as to be able to output multiple characters
+
+	  OUT R4, 7       // Output space
+
+
+// Compare the 2 cards
+// P A R T  1 – Compare Values
+// Part 1 Report: By comparing the numerical values of the cards, we decide which label we should go to. By default, we continue the code as is, assuming the cards are equal (which is the only possibility left). We output the corresponding comparison sign ('>', '<' or '='), and finish off the execution by outputting the value of the last card.
+
+	  CMP R1, R0
+	  BLT Smaller     // Should we go to the 'Smaller' label?
+	  BGT Greater     // Should we go to the 'Greater' label?
+					  // Well, if not, print '=' and continue this set of instructions
+
+
+// If Equal
+
+      OUT R7, 7       // Output '='
+
+	  OUT R4, 7       // Output space
+
+      OUT R9,7        // Output "C1:"
+      OUT R10,7
+      OUT R12,7
+
+	  OUT R4, 7       // Output space
+	  
+	  OUT R2, 8 // Output a null terminated string (the same as the other)
+
+      B DONE
+
+Smaller:
+
+	  OUT R6, 7       // Output '<'
+
+	  OUT R4, 7       // Output space
+
+      OUT R9,7        // Output "C1:"
+      OUT R10,7
+      OUT R12,7
+
+	  OUT R4, 7       // Output space
+	  
+	  MOV R2, #integerToAscii // Load into register R2 the data stored at address integerToAscii (which is the 1st item in the array)
+	  ADD R2, R2, R0 // Add as much as needed to get to the desired card
+	  OUT R2, 8 // Output a null terminated string, so as to be able to output multiple characters
+
+
+      B DONE
+
+Greater: 
+
+      OUT R5, 7       // Output '>'
+
+	  OUT R4, 7       // Output space
+
+      OUT R9,7        // Output "C1:"
+      OUT R10,7
+      OUT R12,7
+	  
+	  OUT R4, 7       // Output space
+
+	  MOV R2, #integerToAscii // Load into register R2 the data stored at address integerToAscii (which is the 1st item in the array)
+	  ADD R2, R2, R0 // Add as much as needed to get to the desired card
+	  OUT R2, 8 // Output a null terminated string, so as to be able to output multiple characters
+
+
+      B DONE
+
+InputError:
+
+      MOV R9, #69     // Move 'E' to register R9 
+      MOV R10, #114   // Move 'r' to register R10
+      MOV R11, #111   // Move 'o' to register R11
+	  // Letters for error code
+
+
+      OUT R9,7        // Output "Error"
+      OUT R10,7
+      OUT R10,7
+      OUT R11,7
+      OUT R10,7
+	  B DONE
+
+integerToAscii:
+	DAT 0x00   // Inserting this character spares us a substraction, which keeps our card number intact (since arrays are indexed 0) 
+	DAT 0x41   // A 
+	DAT 0x32   // 2 
+	DAT 0x33   // 3 
+	DAT 0x34   // 4 
+	DAT 0x35   // 5 
+	DAT 0x36   // 6 
+	DAT 0x37   // 7 
+	DAT 0x38   // 8 
+	DAT 0x39   // 9 	
+	DAT 0x3031 // 10 
+	DAT 0x4A   // J 
+	DAT 0x51   // Q 
+	DAT 0x4B   // K 
+
+DONE:
+	HALT
+
+// C A R D   C O M P A R I S O N |
+//--------------------------------
